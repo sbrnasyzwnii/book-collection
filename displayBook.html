@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Book Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .book-details {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Search Book Records</h2>
+
+    <!-- Select Element to choose book title -->
+    <label for="bookSelect">Select a Book Title:</label>
+    <select id="bookSelect">
+        <option value="">-- Choose a title --</option>
+    </select>
+
+    <!-- Container to display book details -->
+    <div id="details" class="book-details" style="display: none;"></div>
+    <p id="message"></p>
+
+    <script>
+        // Replace with your raw GitHub JSON URL
+        const jsonUrl = 'YOUR_GITHUB_RAW_URL_HERE';
+        let booksData = [];
+
+        // Fetch JSON data from GitHub
+        fetch(jsonUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                booksData = data.Books;
+                populateSelectOptions(booksData);
+            })
+            .catch(error => {
+                console.error('Error fetching JSON:', error);
+                document.getElementById('message').innerText = 'Failed to load book data.';
+            });
+
+        // Function to populate dropdown options
+        function populateSelectOptions(books) {
+            const selectElement = document.getElementById('bookSelect');
+            books.forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.title;
+                option.textContent = book.title;
+                selectElement.appendChild(option);
+            });
+        }
+
+        // Event listener when user selects a title
+        document.getElementById('bookSelect').addEventListener('change', function() {
+            const selectedTitle = this.value;
+            const detailsDiv = document.getElementById('details');
+            const messageP = document.getElementById('message');
+
+            // Find matching book record
+            const foundBook = booksData.find(book => book.title === selectedTitle);
+
+            if (foundBook) {
+                // Display book details on the webpage
+                detailsDiv.style.display = 'block';
+                messageP.innerText = '';
+                detailsDiv.innerHTML = `
+                    <h3>${foundBook.title}</h3>
+                    <p><strong>Author:</strong> ${foundBook.author}</p>
+                    <p><strong>Publication Year:</strong> ${foundBook.publicationYear}</p>
+                    <p><strong>Genres:</strong> ${foundBook.genres.join(', ')}</p>
+                `;
+            } else if (selectedTitle === "") {
+                detailsDiv.style.display = 'none';
+                messageP.innerText = '';
+            } else {
+                detailsDiv.style.display = 'none';
+                messageP.innerText = 'Book not found.';
+            }
+        });
+    </script>
+</body>
+</html>
